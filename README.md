@@ -11,7 +11,7 @@ apt update && apt install wget -y && apt install git -y
 ## Use the release
 
 ```bash
-wget https://raw.githubusercontent.com/AxelRhul/ddes/v1/tool.sh && bash tool.sh && sudo rm -f tool.sh
+wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.0/tool.sh && bash tool.sh && sudo rm -f tool.sh
 ```
 
 ## Use the indev
