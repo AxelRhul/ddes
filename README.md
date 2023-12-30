@@ -11,13 +11,13 @@ apt update && apt install wget -y && apt install git -y
 ## Use the release
 
 ```bash
-wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.0/tool.sh && bash tool.sh && sudo rm -f tool.sh
+wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.1/ddes.sh && bash ddes.sh && sudo rm -f ddes.sh
 ```
 
 ## Use the indev
 
 ```bash
-git clone https://github.com/AxelRhul/ddes.git && cd ddes/ && bash tool.sh 
+git clone https://github.com/AxelRhul/ddes.git && cd ddes/ && bash ddes.sh 
 ```
 
 ## Follow the on-screen prompts to install PHP, Composer, Symfony, NVM, or all of them:
