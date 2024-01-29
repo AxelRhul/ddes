@@ -154,6 +154,7 @@ display_menu() {
                 IFS=',' read -ra php_versions_array <<< "$php_versions"  # Split the input into an array
 
                 for version in "${php_versions_array[@]}"; do
+                    echo "$version"
                     install_php "$version"
                 done
                 sudo update-alternatives --config php
