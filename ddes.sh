@@ -72,8 +72,7 @@ pre_install_php() {
 
 install_php() {
     version=$1
-    sudo apt-get install php$version php$version-fpm php$version-mysql libapache2-mod-php$version libapache2-mod-fcgid -y
-    sudo apt-get install -y php php-cli php-common php-fpm php-mysql php-zip php-gd php-mbstring php-curl php-xml php-bcmath openssl php-json php-tokenizer php-intl
+    sudo apt-get install -y php$version libapache2-mod-php$version libapache2-mod-fcgid php$version-cli php$version-common php$version-fpm php$version-mysql php$version-zip php$version-gd php$version-mbstring php$version-curl php$version-xml openssl php-json php$version-intl
     installed_php_versions+=("$version")
 }
 
@@ -144,6 +143,19 @@ install_all() {
 
 display_tools
 
+display_quote(){
+    echo "----------------------------------"
+    display_tools
+    echo "----------------------------------"
+    echo "Select an option:"
+    echo "1) Install PHP"
+    echo "2) Install Composer"
+    echo "3) Install Symfony"
+    echo "4) Install NVM"
+    echo "5) Install All"
+    echo "6) Quit"
+}
+
 display_menu() {
     select option in "Install PHP" "Install Composer" "Install Symfony" "Install NVM" "Install All" "Quit"
     do
@@ -158,72 +170,27 @@ display_menu() {
                 done
                 sudo update-alternatives --config php
                 echo -e "\e[32mPHP installation complete.\e[0m"
-                echo "----------------------------------"
-                display_tools
-                echo "----------------------------------"
-                echo "Select an option:"
-                echo "1) Install PHP"
-                echo "2) Install Composer"
-                echo "3) Install Symfony"
-                echo "4) Install NVM"
-                echo "5) Install All"
-                echo "6) Quit"
+                display_quote
                 ;;
             "Install Composer")
                 install_composer
                 echo -e "\e[32mComposer installation complete.\e[0m"
-                echo "----------------------------------"
-                display_tools
-                echo "----------------------------------"
-                echo "Select an option:"
-                echo "1) Install PHP"
-                echo "2) Install Composer"
-                echo "3) Install Symfony"
-                echo "4) Install NVM"
-                echo "5) Install All"
-                echo "6) Quit"
+                display_quote
                 ;;
             "Install Symfony")
                 install_symfony
                 echo -e "\e[32mSymfony installation complete.\e[0m"
-                echo "----------------------------------"
-                display_tools
-                echo "----------------------------------"
-                echo "Select an option:"
-                echo "1) Install PHP"
-                echo "2) Install Composer"
-                echo "3) Install Symfony"
-                echo "4) Install NVM"
-                echo "5) Install All"
-                echo "6) Quit"
+                display_quote
                 ;;
             "Install NVM")
                 install_nvm
                 echo -e "\e[32mNVM installation complete.\e[0m"
-                echo "----------------------------------"
-                display_tools
-                echo "----------------------------------"
-                echo "Select an option:"
-                echo "1) Install PHP"
-                echo "2) Install Composer"
-                echo "3) Install Symfony"
-                echo "4) Install NVM"
-                echo "5) Install All"
-                echo "6) Quit"
+                display_quote
                 ;;
             "Install All")
                 install_all
                 echo -e "\e[32mAll installation complete.\e[0m"
-                echo "----------------------------------"
-                display_tools
-                echo "----------------------------------"
-                echo "Select an option:"
-                echo "1) Install PHP"
-                echo "2) Install Composer"
-                echo "3) Install Symfony"
-                echo "4) Install NVM"
-                echo "5) Install All"
-                echo "6) Quit"
+                display_quote
                 ;;
             "Quit")
                 echo "Goodbye!"

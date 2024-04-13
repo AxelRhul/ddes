@@ -3,9 +3,15 @@
 ## Test with Docker
 
 ```bash
+docker build -t ubuntu-ddes-image .
 docker-compose up -d
 docker-compose exec ubuntu-ddes bash
 apt update && apt install wget -y && apt install git -y
+```
+
+### One line command 
+```bash
+docker build -t ubuntu-ddes-image . && docker-compose up -d && docker-compose exec ubuntu-ddes bash
 ```
 
 ## Use the release
@@ -48,4 +54,3 @@ If you'd like to contribute to this project, feel free to open an issue or submi
 
 ## License
 This project is licensed under the MIT License - see the [license](LICENCE.md) file for details.
-

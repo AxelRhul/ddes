@@ -1,7 +1,8 @@
 version: '3'
 services:
   ubuntu-ddes:
-    image: ubuntu:latest
+    build: .
+    image: ubuntu-ddes-image
     command: tail -f /dev/null  # Keeps the container running
     stdin_open: true
     tty: true
