@@ -1,11 +1,52 @@
 #!/bin/bash
 
-# Array to store installed PHP versions
-installed_php_versions=()
+# Check if a command exists
 
 check_command() {
     command -v $1 >/dev/null 2>&1
 }
+
+# Annimation 
+
+loading_animation() {
+    local message=${1:-"Chargement en cours"}
+    local pid=$!
+    local delay=0.1
+    local spinstr='|/-\'
+    local msg_length=${#message}
+    tput civis
+    echo -n "$message"
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf " [%c]  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b\b\b\b\b\b"
+    done
+    printf "\r"
+    for ((i=0; i<msg_length+8; i++)); do
+        printf " "
+    done
+    printf "\r"
+    tput cnorm
+}
+
+# Check if sudo is installed
+
+if ! check_command sudo ; then
+  echo "sudo is not installed. Installing it with apt..."
+  apt-get update >/dev/null 2>&1 & loading_animation "Updating package list"
+  apt-get install sudo -y >/dev/null 2>&1 & loading_animation "Installing sudo"
+  echo "sudo installed successfully."
+  sleep 1
+fi
+
+# Global variables
+
+installed_php_versions=()
+
+
+# Display status 
 
 
 display_tool_status() {
@@ -16,16 +57,13 @@ display_tool_status() {
     fi
 }
 
-# Function to display PHP version status in color
-# Function to display PHP version status in color
+
 display_php_status() {
-    # Check if /etc/php/ directory exists
     if [ ! -d "/etc/php/" ]; then
         echo -e "\e[31mPHP is not installed.\e[0m"
         return
     fi
 
-    # Get the list of installed PHP versions
     installed_php_versions=($(ls /etc/php/))
 
     if [ ${#installed_php_versions[@]} -eq 0 ]; then
@@ -37,14 +75,6 @@ display_php_status() {
         echo -e "\e[32mPHP $version is installed.\e[0m"
     done
 }
-
-
-
-if ! command -v sudo &>/dev/null; then
-  echo "sudo is not installed. Installing it with apt..."
-  apt-get update
-  apt-get install sudo -y
-fi
 
 display_nvm_status(){
     if [ -n "$NVM_DIR" ] && [[ -s $NVM_DIR/nvm.sh ]]; then
@@ -61,107 +91,116 @@ display_tools(){
     display_nvm_status
 }
 
-# Variable to control the loop
-should_exit=false
+# Install 
+
+## Dependencies
+
+install_dependency() {
+    check_command $1 || sudo apt install -y $1 >/dev/null 2>&1 & loading_animation "Installing $1"
+}
+
+## PHP
 
 pre_install_php() {
-    sudo apt-get install software-properties-common -y
-    sudo add-apt-repository ppa:ondrej/php -y
-    sudo apt-get update -y
+    sudo apt-get install software-properties-common -y >/dev/null 2>&1 & loading_animation "Installing software-properties-common"
+    sudo add-apt-repository ppa:ondrej/php -y >/dev/null 2>&1 & loading_animation "Adding PHP repository"
+    sudo apt-get update -y >/dev/null 2>&1 & loading_animation "Updating package list"
 }
 
 install_php() {
-    version=$1
-    sudo apt-get install -y php$version libapache2-mod-php$version libapache2-mod-fcgid php$version-cli php$version-common php$version-fpm php$version-mysql php$version-zip php$version-gd php$version-mbstring php$version-curl php$version-xml openssl php-json php$version-intl
-    installed_php_versions+=("$version")
+    php_version=$1
+    
+    version_compare=$(echo "$php_version" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }')
+    version_8_0_0=$(echo "8.0.0" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }')
+
+    if [ "$version_compare" -ge "$version_8_0_0" ]; then
+        sudo apt-get install -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-intl >/dev/null 2>&1 & loading_animation "Installing PHP $php_version" 
+    else
+        sudo apt-get install -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-json php$php_version-intl >/dev/null 2>&1 & loading_animation "Installing PHP $php_version" 
+    fi
+
+    installed_php_versions+=("$php_version")
+    echo -e "\e[32mPHP $php_version installed successfully.\e[0m"
 }
 
-install_dependency() {
-    command -v $1 >/dev/null 2>&1 || sudo apt install -y $1
+full_install_php() {
+    pre_install_php
+    read -p "Enter PHP version(s) to install (comma-separated, e.g., 7.4,8.0): " php_versions
+    IFS=',' read -ra php_versions_array <<< "$php_versions" 
+
+    for version in "${php_versions_array[@]}"; do
+        install_php "$version"
+    done
 }
+
+## Composer
 
 install_composer() {
     install_dependency "curl"
 
     if [ ! -d "/etc/php/" ]; then
         echo "PHP is not installed. Installing PHP..."
-        pre_install_php
-        read -p "Enter PHP version(s) to install (comma-separated, e.g., 7.4,8.0): " php_versions
-        IFS=',' read -ra php_versions_array <<< "$php_versions"  # Split the input into an array
-
-        for version in "${php_versions_array[@]}"; do
-            install_php "$version"
-        done
+        full_install_php
     fi
     
-    if ! command -v composer &>/dev/null; then
+    if ! check_command composer; then
         php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-        php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+        php composer-setup.php --install-dir=/usr/local/bin --filename=composer >/dev/null 2>&1 & loading_animation "Installing Composer"
         php -r "unlink('composer-setup.php');"
-        echo "Composer installed successfully."
+        echo -e "\e[32mComposer installed successfully."
     else
         echo "Composer is already installed."
     fi
 }
 
+## Symfony
+
 install_symfony() {
     install_dependency "curl" && install_dependency "git"
 
-    if ! command -v composer &>/dev/null; then
+    if ! check_command composer; then
         install_composer
     fi
 
-    sudo wget https://get.symfony.com/cli/installer -O - | bash
+    curl -sS https://get.symfony.com/cli/installer | bash >/dev/null 2>&1 & loading_animation "Installing Symfony"
     sudo mv $HOME/.symfony5/bin/symfony /usr/local/bin/symfony
+
+    echo -e "\e[32mSymfony installed successfully.\e[0m"
 }
 
-install_nvm() {
-    install_dependency "curl" && install_dependency "bash"
+## NVM
 
-    command -v nvm >/dev/null 2>&1 || {
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+install_nvm() {
+    install_dependency "curl"
+
+    check_command nvm || {
+        curl -sS https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash >/dev/null 2>&1 & loading_animation "Installing NVM"
         export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 
         [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
     }
     source ~/.bashrc
 }
 
+## All
+
 install_all() {
-    pre_install_php
-    read -p "Enter PHP version(s) to install (comma-separated, e.g., 7.4,8.0): " php_versions
-    IFS=',' read -ra php_versions_array <<< "$php_versions"  # Split the input into an array
-
-    for version in "${php_versions_array[@]}"; do
-        install_php "$version"
-    done
-
+    full_install_php
     install_composer
     install_symfony
     install_nvm
+    sleep 2
 }
 
-display_tools
-
-display_quote(){
-    echo "----------------------------------"
-    display_tools
-    echo "----------------------------------"
-    echo "Select an option:"
-    echo "1) Install PHP"
-    echo "2) Install Composer"
-    echo "3) Install Symfony"
-    echo "4) Install NVM"
-    echo "5) Install All"
-    echo "6) Quit"
-}
+# Menu
 
 display_menu() {
     local options=("Install NVM" "Install Symfony" "Install Composer" "Install PHP" "Install All" "Quit")
     local selected=0
-
     while true; do
         clear
+        tput civis
+        display_tools
         echo "Use the arrow keys to navigate and Enter to select:"
         for i in "${!options[@]}"; do
             if [ $i -eq $selected ]; then
@@ -188,6 +227,7 @@ display_menu() {
                 fi
                 ;;
             "")
+                tput cnorm
                 case ${options[$selected]} in
                     "Install NVM")
                         install_nvm
@@ -202,13 +242,7 @@ display_menu() {
                         echo -e "\e[32mComposer installation complete.\e[0m"
                         ;;
                     "Install PHP")
-                        pre_install_php
-                        read -p "Enter PHP version(s) to install (comma-separated, e.g., 7.4,8.0): " php_versions
-                        IFS=',' read -ra php_versions_array <<< "$php_versions"  # Split the input into an array
-
-                        for version in "${php_versions_array[@]}"; do
-                            install_php "$version"
-                        done
+                        full_install_php
                         echo -e "\e[32mPHP installation complete.\e[0m"
                         ;;
                     "Install All")
@@ -223,6 +257,7 @@ display_menu() {
                 ;;
         esac
     done
+    
 }
 
 display_menu
