@@ -157,48 +157,69 @@ display_quote(){
 }
 
 display_menu() {
-    select option in "Install PHP" "Install Composer" "Install Symfony" "Install NVM" "Install All" "Quit"
-    do
-        case $option in
-            "Install PHP")
-                pre_install_php
-                read -p "Enter PHP version(s) to install (comma-separated, e.g., 7.4,8.0): " php_versions
-                IFS=',' read -ra php_versions_array <<< "$php_versions"  # Split the input into an array
+    local options=("Install NVM" "Install Symfony" "Install Composer" "Install PHP" "Install All" "Quit")
+    local selected=0
 
-                for version in "${php_versions_array[@]}"; do
-                    install_php "$version"
-                done
-                sudo update-alternatives --config php
-                echo -e "\e[32mPHP installation complete.\e[0m"
-                display_quote
+    while true; do
+        clear
+        echo "Use the arrow keys to navigate and Enter to select:"
+        for i in "${!options[@]}"; do
+            if [ $i -eq $selected ]; then
+                echo -e "\e[1;32m> ${options[$i]}\e[0m"
+            else
+                echo "  ${options[$i]}"
+            fi
+        done
+
+        read -rsn1 input
+        case $input in
+            $'\x1b')
+                read -rsn2 -t 0.1 input
+                if [[ $input == "[A" ]]; then
+                    ((selected--))
+                    if [ $selected -lt 0 ]; then
+                        selected=$((${#options[@]} - 1))
+                    fi
+                elif [[ $input == "[B" ]]; then
+                    ((selected++))
+                    if [ $selected -ge ${#options[@]} ]; then
+                        selected=0
+                    fi
+                fi
                 ;;
-            "Install Composer")
-                install_composer
-                echo -e "\e[32mComposer installation complete.\e[0m"
-                display_quote
-                ;;
-            "Install Symfony")
-                install_symfony
-                echo -e "\e[32mSymfony installation complete.\e[0m"
-                display_quote
-                ;;
-            "Install NVM")
-                install_nvm
-                echo -e "\e[32mNVM installation complete.\e[0m"
-                display_quote
-                ;;
-            "Install All")
-                install_all
-                echo -e "\e[32mAll installation complete.\e[0m"
-                display_quote
-                ;;
-            "Quit")
-                echo "Goodbye!"
-                should_exit=true
-                exit 0
-                ;;
-            *)
-                echo "Invalid option. Please choose a valid option."
+            "")
+                case ${options[$selected]} in
+                    "Install NVM")
+                        install_nvm
+                        echo -e "\e[32mNVM installation complete.\e[0m"
+                        ;;
+                    "Install Symfony")
+                        install_symfony
+                        echo -e "\e[32mSymfony installation complete.\e[0m"
+                        ;;
+                    "Install Composer")
+                        install_composer
+                        echo -e "\e[32mComposer installation complete.\e[0m"
+                        ;;
+                    "Install PHP")
+                        pre_install_php
+                        read -p "Enter PHP version(s) to install (comma-separated, e.g., 7.4,8.0): " php_versions
+                        IFS=',' read -ra php_versions_array <<< "$php_versions"  # Split the input into an array
+
+                        for version in "${php_versions_array[@]}"; do
+                            install_php "$version"
+                        done
+                        echo -e "\e[32mPHP installation complete.\e[0m"
+                        ;;
+                    "Install All")
+                        install_all
+                        echo -e "\e[32mAll installation complete.\e[0m"
+                        ;;
+                    "Quit")
+                        echo "Goodbye!"
+                        exit 0
+                        ;;
+                esac
                 ;;
         esac
     done
