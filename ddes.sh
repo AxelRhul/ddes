@@ -197,19 +197,25 @@ install_all() {
 display_menu() {
     local options=("Install NVM" "Install Symfony" "Install Composer" "Install PHP" "Install All" "Quit")
     local selected=0
-    while true; do
-        clear
-        tput civis
+
+    draw_menu() {
+        tput cup 0 0 
         display_tools
         echo "Use the arrow keys to navigate and Enter to select:"
         for i in "${!options[@]}"; do
             if [ $i -eq $selected ]; then
-                echo -e "\e[1;32m> ${options[$i]}\e[0m"
+                echo -e "\e[1;34m> ${options[$i]}\e[0m"
             else
                 echo "  ${options[$i]}"
             fi
         done
+    }
 
+    clear
+    tput civis
+    draw_menu
+
+    while true; do
         read -rsn1 input
         case $input in
             $'\x1b')
@@ -225,6 +231,7 @@ display_menu() {
                         selected=0
                     fi
                 fi
+                draw_menu
                 ;;
             "")
                 tput cnorm
@@ -251,13 +258,18 @@ display_menu() {
                         ;;
                     "Quit")
                         echo "Goodbye!"
+                        tput cnorm  # Restaurer le curseur
                         exit 0
                         ;;
                 esac
+                clear
+                tput civis
+                draw_menu
                 ;;
         esac
     done
-    
+    tput cnorm
 }
 
+# Appel de la fonction display_menu
 display_menu
