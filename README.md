@@ -17,13 +17,13 @@ docker build -t ubuntu-ddes-image . && docker-compose up -d && docker-compose ex
 ## Use the release
 
 ```bash
-wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.1/ddes.sh && bash ddes.sh && sudo rm -f ddes.sh
+wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.1/ddes.sh && ./ddes.sh && source ./bashrc && sudo rm -f ddes.sh
 ```
 
 ## Use the indev
 
 ```bash
-git clone https://github.com/AxelRhul/ddes.git && cd ddes/ && bash ddes.sh 
+git clone https://github.com/AxelRhul/ddes.git && cd ddes/ && ./ddes.sh && source ./bashrc
 ```
 
 ## Follow the on-screen prompts to install PHP, Composer, Symfony, NVM, or all of them:
