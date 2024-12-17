@@ -27,6 +27,8 @@ git clone https://github.com/AxelRhul/ddes.git && cd ddes/ && ./ddes.sh && sourc
 
 ## Follow the on-screen prompts to install PHP, Composer, Symfony, NVM, NodeJs or all of them:
 
+- Clear Install Checkbox : Remove the program and his dependencies and re-install proprely the program.
+
 - Install PHP: Choose this option to install specific PHP versions.
 
 - Install Composer: Installs Composer globally on your system.
