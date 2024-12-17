@@ -6,7 +6,6 @@
 docker build -t ubuntu-ddes-image .
 docker-compose up -d
 docker-compose exec ubuntu-ddes bash
-apt update && apt install wget -y && apt install git -y
 ```
 
 ### One line command 
@@ -17,16 +16,16 @@ docker build -t ubuntu-ddes-image . && docker-compose up -d && docker-compose ex
 ## Use the release
 
 ```bash
-wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.1/ddes.sh && ./ddes.sh && source ./bashrc && sudo rm -f ddes.sh
+wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.1/ddes.sh && ./ddes.sh && source ~/.bashrc && sudo rm -f ddes.sh
 ```
 
 ## Use the indev
 
 ```bash
-git clone https://github.com/AxelRhul/ddes.git && cd ddes/ && ./ddes.sh && source ./bashrc
+git clone https://github.com/AxelRhul/ddes.git && cd ddes/ && ./ddes.sh && source ~/.bashrc
 ```
 
-## Follow the on-screen prompts to install PHP, Composer, Symfony, NVM, or all of them:
+## Follow the on-screen prompts to install PHP, Composer, Symfony, NVM, NodeJs or all of them:
 
 - Install PHP: Choose this option to install specific PHP versions.
 
@@ -36,14 +35,16 @@ git clone https://github.com/AxelRhul/ddes.git && cd ddes/ && ./ddes.sh && sourc
 
 - Install NVM: Installs Node Version Manager (NVM).
 
-- Install All: Installs PHP, Composer, Symfony, and NVM.
+- Install NodeJs: Choose this option to install specific NodeJs versions.
+
+- Install All: Installs PHP, Composer, Symfony, NVM and NodeJs.
 
 - Quit: Exits the script.
 
 Enjoy the automated installation process for your development environment!
 
 ## Additional Information
-You can customize the PHP versions you want to install during the script execution.
+You can customize the PHP and NodeJs versions you want to install during the script execution.
 
 The script automatically checks for the presence of required dependencies and installs them if needed.
 
