@@ -1,6 +1,11 @@
-# Default Development Environment Script (DDES)
+# 🚀 **Supercharge Your Development Environment with DDES!** 🚀
 
-## Test with Docker
+## ✨ **Effortlessly install PHP, Composer, Symfony, NVM, and NodeJs with our automated script!** ✨
+
+![stable](https://img.shields.io/badge/Stable%20Version-1.2-blue)
+![indev](https://img.shields.io/badge/InDev%20Version-1.3-red)
+
+## Test with Docker 🐳
 
 ```bash
 docker build -t ubuntu-ddes-image .
@@ -8,52 +13,49 @@ docker-compose up -d
 docker-compose exec ubuntu-ddes bash
 ```
 
-### One line command 
+### One-line command for the speedy developer 💨
+
 ```bash
 docker build -t ubuntu-ddes-image . && docker-compose up -d && docker-compose exec ubuntu-ddes bash
 ```
 
-## Use the release
+## Use the latest stable release 🏷️
 
 ```bash
-wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.1/ddes.sh && ./ddes.sh && source ~/.bashrc && sudo rm -f ddes.sh
+wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.2/ddes.sh && chmod +x ddes.sh && ./ddes.sh && source ~/.bashrc && sudo rm -f ddes.sh
 ```
 
-## Use the indev
+## Use the bleeding edge (indev) version 🧪
 
 ```bash
-git clone https://github.com/AxelRhul/ddes.git && cd ddes/ && ./ddes.sh && source ~/.bashrc
+git clone https://github.com/AxelRhul/ddes.git && git checkout -m indev && cd ddes/ && chmod +x ddes.sh && ./ddes.sh && source ~/.bashrc
 ```
 
-## Follow the on-screen prompts to install PHP, Composer, Symfony, NVM, NodeJs or all of them:
+## Feature-packed Menu 🧰
 
-- Clear Install Checkbox : Remove the program and his dependencies and re-install proprely the program.
+- **Clear Install Checkbox:**  🗑️  Wipe away old installations and start fresh!
+- **Install PHP:**  🐘  Choose your desired PHP version.
+- **Install Composer:** 🎼  Orchestrate your project dependencies.
+- **Install Symfony:** 🗼  Build elegant and robust web applications.
+- **Install NVM:**  🔄  Effortlessly manage Node.js versions.
+- **Install NodeJs:**  🟩  Power your JavaScript development.
+- **Install All:**  🚀  Get everything you need in one go!
+- **Quit:**  🚪  Exit the script.
 
-- Install PHP: Choose this option to install specific PHP versions.
+## Additional Perks 🎉
 
-- Install Composer: Installs Composer globally on your system.
+- **Customize PHP and NodeJs versions:**  Pick the perfect tools for your project.
+- **Automatic dependency checks:**  ✅  Ensures a smooth installation process.
+- **Interactive menu:**  🖱️  Easily navigate and select your desired installations.
 
-- Install Symfony: Installs the Symfony CLI.
+## Contribute and Make DDES Even Better! 🤝
 
-- Install NVM: Installs Node Version Manager (NVM).
+Found a bug ? 🐛  
 
-- Install NodeJs: Choose this option to install specific NodeJs versions.
+Have an awesome idea? 💡  
 
-- Install All: Installs PHP, Composer, Symfony, NVM and NodeJs.
+Open an issue or submit a pull request !
 
-- Quit: Exits the script.
+## License 📜
 
-Enjoy the automated installation process for your development environment!
-
-## Additional Information
-You can customize the PHP and NodeJs versions you want to install during the script execution.
-
-The script automatically checks for the presence of required dependencies and installs them if needed.
-
-After each installation, the main menu is displayed, allowing you to choose additional tools or exit the script.
-
-## Contributing
-If you'd like to contribute to this project, feel free to open an issue or submit a pull request.
-
-## License
 This project is licensed under the MIT License - see the [license](LICENCE.md) file for details.
