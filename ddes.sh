@@ -1,21 +1,48 @@
 #!/bin/bash
 
+#========================================================CRTL+C START========================================================#
+
 cleanup() {
-    tput cnorm  # Réafficher le curseur
+    tput cnorm
     exit 0
 }
 
-# Capturer le signal SIGINT (Ctrl+C)
+
 trap cleanup SIGINT
 
+#========================================================CRTL+C END========================================================#
 
-# Check if a command exists
+
+
+
+
+#========================================================MISC START========================================================#
+
+installed_php_versions=()
 
 check_command() {
     command -v $1 >/dev/null 2>&1
 }
 
-# Annimation 
+install_dependency() {
+    check_command $1 || sudo apt install -y $1 >/dev/null 2>&1 & loading_animation "Installing $1"
+}
+
+if ! check_command sudo ; then
+  echo "sudo is not installed. Installing it with apt..."
+  apt-get update >/dev/null 2>&1 & loading_animation "Updating package list"
+  apt-get install sudo -y >/dev/null 2>&1 & loading_animation "Installing sudo"
+  echo "sudo installed successfully."
+  sleep 1
+fi
+
+#========================================================MISC END========================================================#
+
+
+
+
+
+#========================================================ANIMATION START========================================================#
 
 loading_animation() {
     local message=${1:-"Chargement en cours"}
@@ -40,50 +67,19 @@ loading_animation() {
     tput cnorm
 }
 
-# Check if sudo is installed
-
-if ! check_command sudo ; then
-  echo "sudo is not installed. Installing it with apt..."
-  apt-get update >/dev/null 2>&1 & loading_animation "Updating package list"
-  apt-get install sudo -y >/dev/null 2>&1 & loading_animation "Installing sudo"
-  echo "sudo installed successfully."
-  sleep 1
-fi
-
-# Global variables
-
-installed_php_versions=()
+#========================================================ANIMATION END========================================================#
 
 
-# Display status 
 
 
-display_composer_status() {
-    if check_command composer; then
-        version=$(composer -V 2>&1 | grep "Composer version")
-        echo -e "\e[32mComposer (\e[33m$version\e[32m) is already installed.\e[0m"
-    else
-        echo -e "\e[31mComposer is not installed.\e[0m"
-    fi
-}
 
-display_symfony_status() {
-    if check_command symfony; then
-        version=$(symfony -V | sed 's/\x1b\[[0-9;]*m//g')
-        echo -e "\e[32mSymfony (\e[33m$version\e[32m) is already installed.\e[0m"
-    else
-        echo -e "\e[31mSymfony is not installed.\e[0m"
-    fi
-}
-
-
+#========================================================PHP START========================================================#
 check_php_is_installed(){
     if [ -d "/etc/php/" ]; then
         return 0
     fi
     return 1
 }
-
 
 display_php_status() {
     if ! check_php_is_installed ; then
@@ -102,64 +98,6 @@ display_php_status() {
         echo -e "\e[32mPHP $version is installed.\e[0m"
     done
 } 
-
-check_nvm_is_installed(){
-    if [ -n "$NVM_DIR" ] && [[ -s $NVM_DIR/nvm.sh ]]; then
-        return 0
-    fi
-    return 1
-}
-
-display_nvm_status(){
-    if check_nvm_is_installed; then
-        echo -e "\e[32mNVM is already installed.\e[0m"
-    else
-        echo -e "\e[31mNVM is not installed.\e[0m"
-    fi
-}
-
-check_node_is_installed(){
-    if [ ! -d "$HOME/.nvm/versions/node/" ]; then
-        return 1
-    fi
-    return 0
-}
-
-display_node_status() {
-    if ! check_node_is_installed; then
-        echo -e "\e[31mNodeJs is not installed.\e[0m"
-        return
-    fi
-
-    installed_node_versions=($(ls "$HOME/.nvm/versions/node/"))
-
-    if [ ${#installed_node_versions[@]} -eq 0 ]; then
-        echo -e "\e[31mNo NodeJs versions are installed.\e[0m"
-        return
-    fi
-
-    for version in "${installed_node_versions[@]}"; do
-        echo -e "\e[32mNodeJs $version is installed.\e[0m"
-    done
-}
-
-display_tools(){
-    display_php_status
-    display_composer_status
-    display_symfony_status
-    display_nvm_status
-    display_node_status
-}
-
-# Install 
-
-## Dependencies
-
-install_dependency() {
-    check_command $1 || sudo apt install -y $1 >/dev/null 2>&1 & loading_animation "Installing $1"
-}
-
-## PHP
 
 pre_install_php() {
     sudo apt-get install software-properties-common -y >/dev/null 2>&1 & loading_animation "Installing software-properties-common"
@@ -193,7 +131,59 @@ full_install_php() {
     done
 }
 
-## Composer
+remove_php_version() {
+    php_version=$1
+    version_compare=$(echo "$php_version" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }')
+    version_8_0_0=$(echo "8.0.0" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }')
+
+    if [ "$version_compare" -ge "$version_8_0_0" ]; then
+        sudo apt-get remove --purge -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-intl >/dev/null 2>&1 & loading_animation "Removing PHP $php_version"
+    else
+        sudo apt-get remove --purge -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-json php$php_version-intl >/dev/null 2>&1 & loading_animation "Removing PHP $php_version"
+    fi
+}
+
+remove_php() {
+
+    if check_command symfony; then
+        echo "Removing Symfony before Composer..."
+        remove_symfony
+    fi
+
+
+    if check_command composer; then
+        echo "Removing Composer before PHP..."
+        remove_composer
+    fi
+
+    if check_php_is_installed; then
+        for version in "${installed_php_versions[@]}"; do
+           remove_php_version "$version"
+        done
+    fi
+
+    sudo add-apt-repository --remove ppa:ondrej/php -y >/dev/null 2>&1 & loading_animation "Removing PHP repository"
+
+    sudo apt autoremove --purge -y >/dev/null 2>&1 & loading_animation "Removing PHP dependencies"
+
+    echo -e "\e[32mPHP removed successfully.\e[0m"
+}
+#========================================================PHP END========================================================#
+
+
+
+
+
+#========================================================COMPOSER START========================================================#
+
+display_composer_status() {
+    if check_command composer; then
+        version=$(composer -V 2>&1 | grep "Composer version")
+        echo -e "\e[32mComposer (\e[33m$version\e[32m) is already installed.\e[0m"
+    else
+        echo -e "\e[31mComposer is not installed.\e[0m"
+    fi
+}
 
 install_composer() {
     install_dependency "curl"
@@ -213,7 +203,34 @@ install_composer() {
     fi
 }
 
-## Symfony
+remove_composer() {
+    if check_command symfony; then
+        echo "Removing Symfony before Composer..."
+        remove_symfony
+    fi
+
+    if check_command composer; then
+        sudo rm /usr/local/bin/composer & loading_animation "Removing Composer"
+    fi
+
+    echo -e "\e[32mComposer removed successfully.\e[0m"
+}
+#========================================================COMPOSER END========================================================#
+
+
+
+
+
+#========================================================SYMFONY START========================================================#
+
+display_symfony_status() {
+    if check_command symfony; then
+        version=$(symfony -V | sed 's/\x1b\[[0-9;]*m//g')
+        echo -e "\e[32mSymfony (\e[33m$version\e[32m) is already installed.\e[0m"
+    else
+        echo -e "\e[31mSymfony is not installed.\e[0m"
+    fi
+}
 
 install_symfony() {
     install_dependency "curl" && install_dependency "git"
@@ -228,7 +245,36 @@ install_symfony() {
     echo -e "\e[32mSymfony installed successfully.\e[0m"
 }
 
-## NVM
+remove_symfony() {
+    if check_command symfony; then
+        sudo rm /usr/local/bin/symfony & loading_animation "Removing Symfony"
+    fi
+
+    echo -e "\e[32mSymfony removed successfully.\e[0m"
+}
+
+#========================================================SYMFONY END========================================================#
+
+
+
+
+
+#========================================================NVM START========================================================#
+
+check_nvm_is_installed(){
+    if [ -n "$NVM_DIR" ] && [[ -s $NVM_DIR/nvm.sh ]]; then
+        return 0
+    fi
+    return 1
+}
+
+display_nvm_status(){
+    if check_nvm_is_installed; then
+        echo -e "\e[32mNVM is already installed.\e[0m"
+    else
+        echo -e "\e[31mNVM is not installed.\e[0m"
+    fi
+}
 
 install_nvm() {
     install_dependency "curl"
@@ -243,120 +289,7 @@ install_nvm() {
     fi
 }
 
-install_node() {
-    if [ -n "$NVM_DIR" ] && [[ -s $NVM_DIR/nvm.sh ]]; then
-        echo -e "\e[32mNVM is already installed.\e[0m"
-    else
-        install_nvm
-    fi
-
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-    read -p "Enter NodeJs version(s) to install (comma-separated, e.g., node, 19.9.0, 10.24.1) (node is for latest): " node_versions
-    IFS=',' read -ra node_versions_array <<< "$node_versions" 
-
-    for version in "${node_versions_array[@]}"; do
-        displayVersion=$version
-        if [ "$version" = "node" ]; then
-            displayVersion="latest"
-        fi
-        nvm install "$version" >/dev/null 2>&1 & loading_animation "Installing NodeJs $displayVersion"
-    done
-}
-
-## All
-
-install_all() {
-    full_install_php
-    install_composer
-    install_symfony
-    install_nvm
-    install_node
-    sleep 2
-}
-
-
-remove_symfony() {
-    if check_command symfony; then
-        sudo rm /usr/local/bin/symfony & loading_animation "Removing Symfony"
-    fi
-
-    echo -e "\e[32mSymfony removed successfully.\e[0m"
-}
-
-remove_composer() {
-    # remove Symfony before Composer
-    if check_command symfony; then
-        echo "Removing Symfony before Composer..."
-        remove_symfony
-    fi
-
-    if check_command composer; then
-        sudo rm /usr/local/bin/composer & loading_animation "Removing Composer"
-    fi
-
-    echo -e "\e[32mComposer removed successfully.\e[0m"
-}
-
-remove_php_version() {
-    php_version=$1
-    version_compare=$(echo "$php_version" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }')
-    version_8_0_0=$(echo "8.0.0" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }')
-
-    if [ "$version_compare" -ge "$version_8_0_0" ]; then
-        sudo apt-get remove --purge -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-intl >/dev/null 2>&1 & loading_animation "Removing PHP $php_version"
-    else
-        sudo apt-get remove --purge -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-json php$php_version-intl >/dev/null 2>&1 & loading_animation "Removing PHP $php_version"
-    fi
-}
-
-remove_php() {
-
-    # remove Symfony before Composer
-    if check_command symfony; then
-        echo "Removing Symfony before Composer..."
-        remove_symfony
-    fi
-
-
-    # remove Composer before PHP
-    if check_command composer; then
-        echo "Removing Composer before PHP..."
-        remove_composer
-    fi
-
-    if check_php_is_installed; then
-        for version in "${installed_php_versions[@]}"; do
-           remove_php_version "$version"
-        done
-    fi
-
-    sudo add-apt-repository --remove ppa:ondrej/php -y >/dev/null 2>&1 & loading_animation "Removing PHP repository"
-
-    sudo apt autoremove --purge -y >/dev/null 2>&1 & loading_animation "Removing PHP dependencies"
-
-    echo -e "\e[32mPHP removed successfully.\e[0m"
-}
-
-remove_node(){
-    if check_node_is_installed; then
-        export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-        read -p "Enter NodeJs version(s) to remove (comma-separated, e.g., 23.4.0, 19.9.0, 10.24.1) (do not use node for latest): " node_versions
-        IFS=',' read -ra node_versions_array <<< "$node_versions"
-
-        for version in "${node_versions_array[@]}"; do
-            nvm uninstall "$version" >/dev/null 2>&1 & loading_animation "Removing NodeJs $version"
-        done
-
-        echo -e "\e[32mNodeJs removed successfully.\e[0m"
-    fi
-}
-
 remove_nvm() {
-    # remove NodeJs before NVM
     if check_nvm_is_installed; then
         echo "Removing NodeJs before NVM..."
 
@@ -388,7 +321,109 @@ remove_nvm() {
     fi
 }
 
-# Menu
+#========================================================NVM END========================================================#
+
+
+
+
+
+#========================================================NODEJS START========================================================#
+
+check_node_is_installed(){
+    if [ ! -d "$HOME/.nvm/versions/node/" ]; then
+        return 1
+    fi
+    return 0
+}
+
+display_node_status() {
+    if ! check_node_is_installed; then
+        echo -e "\e[31mNodeJs is not installed.\e[0m"
+        return
+    fi
+
+    installed_node_versions=($(ls "$HOME/.nvm/versions/node/"))
+
+    if [ ${#installed_node_versions[@]} -eq 0 ]; then
+        echo -e "\e[31mNo NodeJs versions are installed.\e[0m"
+        return
+    fi
+
+    for version in "${installed_node_versions[@]}"; do
+        echo -e "\e[32mNodeJs $version is installed.\e[0m"
+    done
+}
+
+install_node() {
+    if [ -n "$NVM_DIR" ] && [[ -s $NVM_DIR/nvm.sh ]]; then
+        echo -e "\e[32mNVM is already installed.\e[0m"
+    else
+        install_nvm
+    fi
+
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+    read -p "Enter NodeJs version(s) to install (comma-separated, e.g., node, 19.9.0, 10.24.1) (node is for latest): " node_versions
+    IFS=',' read -ra node_versions_array <<< "$node_versions" 
+
+    for version in "${node_versions_array[@]}"; do
+        displayVersion=$version
+        if [ "$version" = "node" ]; then
+            displayVersion="latest"
+        fi
+        nvm install "$version" >/dev/null 2>&1 & loading_animation "Installing NodeJs $displayVersion"
+    done
+}
+
+remove_node(){
+    if check_node_is_installed; then
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+        read -p "Enter NodeJs version(s) to remove (comma-separated, e.g., 23.4.0, 19.9.0, 10.24.1) (do not use node for latest): " node_versions
+        IFS=',' read -ra node_versions_array <<< "$node_versions"
+
+        for version in "${node_versions_array[@]}"; do
+            nvm uninstall "$version" >/dev/null 2>&1 & loading_animation "Removing NodeJs $version"
+        done
+
+        echo -e "\e[32mNodeJs removed successfully.\e[0m"
+    fi
+}
+
+#========================================================NODEJS END========================================================#
+
+
+
+
+
+#========================================================ALL FUNCTIONS START========================================================#
+
+install_all() {
+    full_install_php
+    install_composer
+    install_symfony
+    install_nvm
+    install_node
+    sleep 2
+}
+
+display_tools(){
+    display_php_status
+    display_composer_status
+    display_symfony_status
+    display_nvm_status
+    display_node_status
+}
+
+#========================================================ALL FUNCTIONS END========================================================#
+
+
+
+
+
+#========================================================MENU START========================================================#
 
 clean_install=false
 
@@ -401,29 +436,28 @@ display_menu() {
         display_tools
         echo "Use the arrow keys to navigate and Enter to select:"
 
-        # Affichage de la case à cocher pour Clean Install
         for i in "${!options[@]}"; do
             if [ $i -eq $selected ]; then
-                if [ $i -eq 0 ]; then # Cas spécial pour "Clean Install"
+                if [ $i -eq 0 ]; then
                     if $clean_install; then
                         clean_install_display="[x]"
                     else
                         clean_install_display="[ ]"
                     fi
-                    echo -e "\e[1;34m> ${options[$i]} $clean_install_display\e[0m" # Highlighted with checkbox
+                    echo -e "\e[1;34m> ${options[$i]} $clean_install_display\e[0m"
                 else
-                    echo -e "\e[1;34m> ${options[$i]}\e[0m" # Highlighted
+                    echo -e "\e[1;34m> ${options[$i]}\e[0m"
                 fi
             else
-                if [ $i -eq 0 ]; then # Cas spécial pour "Clean Install"
+                if [ $i -eq 0 ]; then
                     if $clean_install; then
                         clean_install_display="[x]"
                     else
                         clean_install_display="[ ]"
                     fi
-                    echo "  ${options[$i]} $clean_install_display" # Not highlighted with checkbox
+                    echo "  ${options[$i]} $clean_install_display"
                 else
-                    echo "  ${options[$i]}" # Not highlighted
+                    echo "  ${options[$i]}"
                 fi
             fi
         done
@@ -461,8 +495,8 @@ display_menu() {
                             clean_install=true
                         fi
                         tput civis
-                        draw_menu # Redessiner le menu pour refléter le changement
-                        continue # Pour ne pas exécuter d'autres actions du case
+                        draw_menu
+                        continue
                         ;;
                     "Install NVM")
                          if $clean_install; then
@@ -546,6 +580,6 @@ display_menu() {
     tput cnorm
 }
 
-
-# Appel de la fonction display_menu
 display_menu
+
+#========================================================MENU END========================================================#
