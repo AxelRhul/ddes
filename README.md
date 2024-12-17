@@ -22,7 +22,7 @@ docker build -t ubuntu-ddes-image . && docker-compose up -d && docker-compose ex
 ## Use the latest stable release 🏷️
 
 ```bash
-wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.2/ddes.sh && chmod +x ddes.sh && ./ddes.sh && source ~/.bashrc && sudo rm -f ddes.sh
+wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.3/ddes.sh && chmod +x ddes.sh && ./ddes.sh && source ~/.bashrc && sudo rm -f ddes.sh
 ```
 
 ## Use the bleeding edge (indev) version 🧪
