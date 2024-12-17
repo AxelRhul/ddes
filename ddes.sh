@@ -16,33 +16,7 @@ trap cleanup SIGINT
 
 
 
-#========================================================MISC START========================================================#
-
-installed_php_versions=()
-
-check_command() {
-    command -v $1 >/dev/null 2>&1
-}
-
-install_dependency() {
-    check_command $1 || sudo apt install -y $1 >/dev/null 2>&1 & loading_animation "Installing $1"
-}
-
-if ! check_command sudo ; then
-  echo "sudo is not installed. Installing it with apt..."
-  apt-get update >/dev/null 2>&1 & loading_animation "Updating package list"
-  apt-get install sudo -y >/dev/null 2>&1 & loading_animation "Installing sudo"
-  echo "sudo installed successfully."
-  sleep 1
-fi
-
-#========================================================MISC END========================================================#
-
-
-
-
-
-#========================================================ANIMATION START========================================================#
+#========================================================ANIMATION START======================================================#
 
 loading_animation() {
     local message=${1:-"Chargement en cours"}
@@ -68,6 +42,32 @@ loading_animation() {
 }
 
 #========================================================ANIMATION END========================================================#
+
+
+
+
+
+#========================================================MISC START========================================================#
+
+installed_php_versions=()
+
+check_command() {
+    command -v $1 >/dev/null 2>&1
+}
+
+install_dependency() {
+    check_command $1 || sudo apt install -y $1 >/dev/null 2>&1 & loading_animation "Installing $1"
+}
+
+if ! check_command sudo ; then
+  echo "sudo is not installed. Installing it with apt..."
+  apt-get update >/dev/null 2>&1 & loading_animation "Updating package list"
+  apt-get install sudo -y >/dev/null 2>&1 & loading_animation "Installing sudo"
+  echo "sudo installed successfully."
+  sleep 1
+fi
+
+#========================================================MISC END========================================================#
 
 
 

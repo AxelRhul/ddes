@@ -2,8 +2,8 @@
 
 ## ✨ **Effortlessly install PHP, Composer, Symfony, NVM, and NodeJs with our automated script!** ✨
 
-![stable](https://img.shields.io/badge/Stable%20Version-1.2-blue)
-![indev](https://img.shields.io/badge/InDev%20Version-1.3-red)
+![stable](https://img.shields.io/badge/Stable%20Version-1.3-blue)
+![indev](https://img.shields.io/badge/InDev%20Version-1.4-red)
 
 ## Test with Docker 🐳
 
