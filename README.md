@@ -2,8 +2,8 @@
 
 ## ✨ **Effortlessly install PHP, Composer, Symfony, NVM, and NodeJs with our automated script!** ✨
 
-![stable](https://img.shields.io/badge/Stable%20Version-1.3-blue)
-![indev](https://img.shields.io/badge/InDev%20Version-1.4-red)
+![stable](https://img.shields.io/badge/Stable%20Version-1.4-blue)
+![indev](https://img.shields.io/badge/InDev%20Version-1.5-red)
 
 ## Test with Docker 🐳
 
@@ -16,13 +16,13 @@ docker-compose exec ubuntu-ddes bash
 ### One-line command for the speedy developer 💨
 
 ```bash
-docker build -t ubuntu-ddes-image . && docker-compose up -d && docker-compose exec ubuntu-ddes bash
+docker build -t ubuntu-ddes-image . && docker-compose up -d --force-recreate && docker-compose exec ubuntu-ddes bash
 ```
 
 ## Use the latest stable release 🏷️
 
 ```bash
-wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.3/ddes.sh && chmod +x ddes.sh && ./ddes.sh && source ~/.bashrc && sudo rm -f ddes.sh
+wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.4/ddes.sh && chmod +x ddes.sh && ./ddes.sh && source ~/.bashrc
 ```
 
 ## Use the bleeding edge (indev) version 🧪
@@ -40,7 +40,7 @@ git clone https://github.com/AxelRhul/ddes.git && git checkout -m indev && cd dd
 - **Install NVM:**  🔄  Effortlessly manage Node.js versions.
 - **Install NodeJs:**  🟩  Power your JavaScript development.
 - **Install All:**  🚀  Get everything you need in one go!
-- **Quit:**  🚪  Exit the script.
+- **Quit:**  🚪  Exit the script and remove the script.
 
 ## Additional Perks 🎉
 

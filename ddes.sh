@@ -568,7 +568,7 @@ display_menu() {
                     "Quit")
                         echo "Goodbye!"
                         tput cnorm
-                        exit 0
+                        rm "$0" & exit
                         ;;
                 esac
                 clear
