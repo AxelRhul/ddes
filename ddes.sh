@@ -67,6 +67,19 @@ if ! check_command sudo ; then
   sleep 1
 fi
 
+prompt_for_sudo() {
+    if sudo -n true 2>/dev/null; then
+        return 0
+    else
+        echo -e "\e[33mVeuillez entrer votre mot de passe sudo :\e[0m"
+        sudo -v
+        if [ $? -ne 0 ]; then
+            echo -e "\e[31mErreur : échec de l'authentification sudo.\e[0m"
+            exit 1
+        fi
+    fi
+}
+
 #========================================================MISC END========================================================#
 
 
@@ -194,9 +207,9 @@ install_composer() {
     fi
     
     if ! check_command composer; then
-        php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-        php composer-setup.php --install-dir=/usr/local/bin --filename=composer >/dev/null 2>&1 & loading_animation "Installing Composer"
-        php -r "unlink('composer-setup.php');"
+        php -r "copy('https://getcomposer.org/installer', '/var/tmp/composer-setup.php');"
+        sudo php /var/tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer >/dev/null 2>&1 & loading_animation "Installing Composer"
+        php -r "unlink('/var/tmp/composer-setup.php');"
         echo -e "\e[32mComposer installed successfully."
     else
         echo "Composer is already installed."
@@ -580,6 +593,7 @@ display_menu() {
     tput cnorm
 }
 
+prompt_for_sudo
 display_menu
 
 #========================================================MENU END========================================================#
