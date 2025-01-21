@@ -2,7 +2,9 @@ FROM ubuntu:latest
 
 RUN apt update 
 
-RUN apt install -y vim shellcheck curl sudo
+RUN apt install -y vim shellcheck curl 
+
+RUN apt install -y sudo
 
 RUN useradd -m -s /bin/bash user
 
@@ -15,3 +17,5 @@ COPY ddes.sh /ddes.sh
 COPY ddes.deb /ddes.deb
 
 RUN chmod +x /ddes.sh
+
+# USER user

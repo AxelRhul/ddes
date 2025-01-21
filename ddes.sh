@@ -56,26 +56,26 @@ check_command() {
 }
 
 install_dependency() {
-    check_command $1 || sudo apt install -y $1 >/dev/null 2>&1 & loading_animation "Installing $1"
+    check_command $1 || $USE_SUDO apt install -y $1 >/dev/null 2>&1 & loading_animation "Installing $1"
 }
 
 if ! check_command sudo ; then
-  echo "sudo is not installed. Installing it with apt..."
-  apt-get update >/dev/null 2>&1 & loading_animation "Updating package list"
-  apt-get install sudo -y >/dev/null 2>&1 & loading_animation "Installing sudo"
-  echo "sudo installed successfully."
-  sleep 1
+    USE_SUDO=""
+else
+    USE_SUDO="sudo"
 fi
 
 prompt_for_sudo() {
-    if sudo -n true 2>/dev/null; then
-        return 0
-    else
-        echo -e "\e[33mVeuillez entrer votre mot de passe sudo :\e[0m"
-        sudo -v
-        if [ $? -ne 0 ]; then
-            echo -e "\e[31mErreur : échec de l'authentification sudo.\e[0m"
-            exit 1
+    if [ -n "$USE_SUDO" ]; then
+        if sudo -n true 2>/dev/null; then
+            return 0
+        else
+            echo -e "\e[33mVeuillez entrer votre mot de passe sudo :\e[0m"
+            sudo -v
+            if [ $? -ne 0 ]; then
+                echo -e "\e[31mErreur : échec de l'authentification sudo.\e[0m"
+                exit 1
+            fi
         fi
     fi
 }
@@ -113,9 +113,10 @@ display_php_status() {
 } 
 
 pre_install_php() {
-    sudo apt-get install software-properties-common -y >/dev/null 2>&1 & loading_animation "Installing software-properties-common"
-    sudo add-apt-repository ppa:ondrej/php -y >/dev/null 2>&1 & loading_animation "Adding PHP repository"
-    sudo apt-get update -y >/dev/null 2>&1 & loading_animation "Updating package list"
+    $USE_SUDO apt-get update >/dev/null 2>&1 & loading_animation "Updating package list"
+    $USE_SUDO apt-get install software-properties-common -y >/dev/null 2>&1 & loading_animation "Installing software-properties-common"
+    $USE_SUDO add-apt-repository ppa:ondrej/php -y >/dev/null 2>&1 & loading_animation "Adding PHP repository"
+    $USE_SUDO apt-get update -y >/dev/null 2>&1 & loading_animation "Updating package list"
 }
 
 install_php() {
@@ -125,9 +126,25 @@ install_php() {
     version_8_0_0=$(echo "8.0.0" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }')
 
     if [ "$version_compare" -ge "$version_8_0_0" ]; then
-        sudo apt-get install -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-intl >/dev/null 2>&1 & loading_animation "Installing PHP $php_version" 
+        $USE_SUDO apt-get install -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-intl >/dev/null 2>&1 & loading_animation "Installing PHP $php_version" 
     else
-        sudo apt-get install -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-json php$php_version-intl >/dev/null 2>&1 & loading_animation "Installing PHP $php_version" 
+        $USE_SUDO apt-get install -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-json php$php_version-intl >/dev/null 2>&1 & loading_animation "Installing PHP $php_version" 
+    fi
+
+    installed_php_versions+=("$php_version")
+    echo -e "\e[32mPHP $php_version installed successfully.\e[0m"
+}
+
+install_php() {
+    php_version=$1
+    
+    version_compare=$(echo "$php_version" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }')
+    version_8_0_0=$(echo "8.0.0" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }')
+
+    if [ "$version_compare" -ge "$version_8_0_0" ]; then
+        $USE_SUDO apt-get install -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-intl
+    else
+        $USE_SUDO apt-get install -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-json php$php_version-intl
     fi
 
     installed_php_versions+=("$php_version")
@@ -150,9 +167,9 @@ remove_php_version() {
     version_8_0_0=$(echo "8.0.0" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }')
 
     if [ "$version_compare" -ge "$version_8_0_0" ]; then
-        sudo apt-get remove --purge -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-intl >/dev/null 2>&1 & loading_animation "Removing PHP $php_version"
+        $USE_SUDO apt-get remove --purge -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-intl >/dev/null 2>&1 & loading_animation "Removing PHP $php_version"
     else
-        sudo apt-get remove --purge -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-json php$php_version-intl >/dev/null 2>&1 & loading_animation "Removing PHP $php_version"
+        $USE_SUDO apt-get remove --purge -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-json php$php_version-intl >/dev/null 2>&1 & loading_animation "Removing PHP $php_version"
     fi
 }
 
@@ -175,9 +192,9 @@ remove_php() {
         done
     fi
 
-    sudo add-apt-repository --remove ppa:ondrej/php -y >/dev/null 2>&1 & loading_animation "Removing PHP repository"
+    $USE_SUDO add-apt-repository --remove ppa:ondrej/php -y >/dev/null 2>&1 & loading_animation "Removing PHP repository"
 
-    sudo apt autoremove --purge -y >/dev/null 2>&1 & loading_animation "Removing PHP dependencies"
+    $USE_SUDO apt autoremove --purge -y >/dev/null 2>&1 & loading_animation "Removing PHP dependencies"
 
     echo -e "\e[32mPHP removed successfully.\e[0m"
 }
@@ -208,7 +225,7 @@ install_composer() {
     
     if ! check_command composer; then
         php -r "copy('https://getcomposer.org/installer', '/var/tmp/composer-setup.php');"
-        sudo php /var/tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer >/dev/null 2>&1 & loading_animation "Installing Composer"
+        $USE_SUDO php /var/tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer >/dev/null 2>&1 & loading_animation "Installing Composer"
         php -r "unlink('/var/tmp/composer-setup.php');"
         echo -e "\e[32mComposer installed successfully."
     else
@@ -223,7 +240,7 @@ remove_composer() {
     fi
 
     if check_command composer; then
-        sudo rm /usr/local/bin/composer & loading_animation "Removing Composer"
+        $USE_SUDO rm /usr/local/bin/composer & loading_animation "Removing Composer"
     fi
 
     echo -e "\e[32mComposer removed successfully.\e[0m"
@@ -253,14 +270,14 @@ install_symfony() {
     fi
 
     curl -sS https://get.symfony.com/cli/installer | bash >/dev/null 2>&1 & loading_animation "Installing Symfony"
-    sudo mv $HOME/.symfony5/bin/symfony /usr/local/bin/symfony
+    $USE_SUDO mv $HOME/.symfony5/bin/symfony /usr/local/bin/symfony
 
     echo -e "\e[32mSymfony installed successfully.\e[0m"
 }
 
 remove_symfony() {
     if check_command symfony; then
-        sudo rm /usr/local/bin/symfony & loading_animation "Removing Symfony"
+        $USE_SUDO rm /usr/local/bin/symfony & loading_animation "Removing Symfony"
     fi
 
     echo -e "\e[32mSymfony removed successfully.\e[0m"
@@ -581,7 +598,7 @@ display_menu() {
                     "Quit")
                         echo "Goodbye!"
                         tput cnorm
-                        rm "$0" & exit
+                        $USE_SUDO rm "$0" & exit
                         ;;
                 esac
                 clear
