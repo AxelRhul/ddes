@@ -1,1 +1,5 @@
 *.sh text eol=lf
+
+ddes-package/DEBIAN/postinst text eol=lf
+
+ddes-package/usr/bin/ddes text eol=lf
