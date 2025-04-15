@@ -1,0 +1,11 @@
+Source: ddes
+Section: utils
+Priority: optional
+Maintainer: Axel Rhul
+Depends: git, curl
+Version: 1.0
+Homepage: https://github.com/AxelRhul/ddes
+Package: ddes
+Architecture: all
+Description: Une brève description de votre paquet
+ DDES est un outil de gestion de dev.

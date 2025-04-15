@@ -1,0 +1,4 @@
+#!/bin/bash
+set -x
+# Rendre le script exécutable
+chmod +x /usr/bin/ddes

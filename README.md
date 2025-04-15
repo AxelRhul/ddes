@@ -2,8 +2,8 @@
 
 ## ✨ **Effortlessly install PHP, Composer, Symfony, NVM, and NodeJs with our automated script!** ✨
 
-![stable](https://img.shields.io/badge/Stable%20Version-1.4-blue)
-![indev](https://img.shields.io/badge/InDev%20Version-1.5-red)
+![stable](https://img.shields.io/badge/Stable%20Version-1.5-blue)
+![indev](https://img.shields.io/badge/InDev%20Version-1.6-red)
 
 ## Test with Docker 🐳
 
@@ -28,8 +28,46 @@ wget https://raw.githubusercontent.com/AxelRhul/ddes/v1.4/ddes.sh && chmod +x dd
 ## Use the bleeding edge (indev) version 🧪
 
 ```bash
-git clone https://github.com/AxelRhul/ddes.git && git checkout -m indev && cd ddes/ && chmod +x ddes.sh && ./ddes.sh && source ~/.bashrc
+git clone https://github.com/AxelRhul/ddes.git && git checkout -m indev
 ```
+
+### How to use indev (Debian Package)
+
+
+#### Install the script
+
+```bash
+dpkg-deb --build ddes-package/ && mv ddes-package.deb ddes.deb
+```
+
+```bash
+docker build -t ubuntu-ddes-image . && docker-compose up -d --force-recreate && docker-compose exec ubuntu-ddes bash
+```
+
+```bash 
+apt update && apt install ./ddes.deb -y && ddes
+```
+
+#### Switch to user to get the sudo case
+
+```bash
+dpkg-deb --build ddes-package/ && mv ddes-package.deb ddes.deb
+```
+
+```bash
+docker build -t ubuntu-ddes-image . && docker-compose up -d --force-recreate && docker-compose exec ubuntu-ddes bash
+```
+
+```bash
+su user
+#password: user
+```
+
+```bash 
+sudo apt update && sudo apt install ./ddes.deb -y && ddes
+```
+
+
 
 ## Feature-packed Menu 🧰
 

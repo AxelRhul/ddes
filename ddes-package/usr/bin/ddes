@@ -615,7 +615,7 @@ display_menu() {
                     "Quit")
                         echo "Goodbye!"
                         tput cnorm
-                        $USE_SUDO rm "$0" & exit
+                        exit
                         ;;
                 esac
                 clear
