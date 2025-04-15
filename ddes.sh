@@ -114,8 +114,24 @@ display_php_status() {
 
 pre_install_php() {
     $USE_SUDO apt-get update >/dev/null 2>&1 & loading_animation "Updating package list"
-    $USE_SUDO apt-get install software-properties-common -y >/dev/null 2>&1 & loading_animation "Installing software-properties-common"
-    $USE_SUDO add-apt-repository ppa:ondrej/php -y >/dev/null 2>&1 & loading_animation "Adding PHP repository"
+
+    echo "Checking if required dependencies are already installed..."
+
+    # Check if the package software-properties-common is installed
+    if ! dpkg -l | grep -q "software-properties-common"; then
+        $USE_SUDO apt-get install software-properties-common -y >/dev/null 2>&1 & loading_animation "Installing software-properties-common"
+    else
+        echo -e "\e[32msoftware-properties-common is already installed.\e[0m"
+    fi
+
+    # Check if the PHP repository is already added
+    if ! ls /etc/apt/sources.list.d/ | grep -q "ondrej-ubuntu-php-noble.sources"; then
+        $USE_SUDO add-apt-repository ppa:ondrej/php -y >/dev/null 2>&1 & loading_animation "Adding PHP repository"
+    else
+        echo -e "\e[32mPHP repository is already added.\e[0m"
+    fi
+
+    # Update the package list
     $USE_SUDO apt-get update -y >/dev/null 2>&1 & loading_animation "Updating package list"
 }
 
@@ -137,8 +153,25 @@ install_php() {
 
 full_install_php() {
     pre_install_php
-    read -p "Enter PHP version(s) to install (comma-separated, e.g., 7.4,8.0): " php_versions
-    IFS=',' read -ra php_versions_array <<< "$php_versions" 
+
+    while true; do
+        read -p "Enter PHP version(s) to install (comma-separated, e.g., 7.4,8.0): " php_versions
+        IFS=',' read -ra php_versions_array <<< "$php_versions"
+
+        # Validate each version
+        valid=true
+        for version in "${php_versions_array[@]}"; do
+            if [[ ! $version =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+                echo -e "\e[31mInvalid PHP version format: $version. Please use the format X.Y or X.Y.Z (e.g., 7.4, 8.0).\e[0m"
+                valid=false
+                break
+            fi
+        done
+
+        if $valid; then
+            break
+        fi
+    done
 
     for version in "${php_versions_array[@]}"; do
         install_php "$version"
