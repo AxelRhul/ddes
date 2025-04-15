@@ -135,22 +135,6 @@ install_php() {
     echo -e "\e[32mPHP $php_version installed successfully.\e[0m"
 }
 
-install_php() {
-    php_version=$1
-    
-    version_compare=$(echo "$php_version" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }')
-    version_8_0_0=$(echo "8.0.0" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }')
-
-    if [ "$version_compare" -ge "$version_8_0_0" ]; then
-        $USE_SUDO apt-get install -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-intl
-    else
-        $USE_SUDO apt-get install -y php$php_version libapache2-mod-php$php_version libapache2-mod-fcgid php$php_version-cli php$php_version-common php$php_version-fpm php$php_version-mysql php$php_version-zip php$php_version-gd php$php_version-mbstring php$php_version-curl php$php_version-xml openssl php$php_version-json php$php_version-intl
-    fi
-
-    installed_php_versions+=("$php_version")
-    echo -e "\e[32mPHP $php_version installed successfully.\e[0m"
-}
-
 full_install_php() {
     pre_install_php
     read -p "Enter PHP version(s) to install (comma-separated, e.g., 7.4,8.0): " php_versions
